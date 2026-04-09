@@ -38,7 +38,7 @@ app.use(cors({
 app.use(express.json());
 
 // Serve React static files
-const buildPath = path.join(__dirname, '../client/build');
+const buildPath = path.join(__dirname, '../public');
 app.use(express.static(buildPath));
 
 // MongoDB Connection
