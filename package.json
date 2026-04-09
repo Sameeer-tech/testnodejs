@@ -1,0 +1,14 @@
+{
+  "name": "chat-app",
+  "version": "1.0.0",
+  "description": "Chat Application",
+  "main": "server/server.js",
+  "engines": {
+    "node": "18.x"
+  },
+  "scripts": {
+    "install-server": "cd server && npm install",
+    "start": "cd server && npm start",
+    "dev": "cd server && npm run dev"
+  }
+}
