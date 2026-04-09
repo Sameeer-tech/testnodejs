@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
+const fs = require('fs');
 
 dotenv.config();
 
@@ -38,9 +39,18 @@ app.use(cors({
 app.use(express.json());
 
 // Serve React static files
-const buildPath = path.join(__dirname, './public');
-console.log('Serving static files from:', buildPath);
-app.use(express.static(buildPath));
+const publicPath = path.join(__dirname, '../public');
+const buildPath = path.join(__dirname, '../public');
+
+// Check if build folder exists
+if (fs.existsSync(publicPath)) {
+  console.log('Public folder found at:', publicPath);
+  app.use(express.static(publicPath));
+} else {
+  console.warn('Public folder not found at:', publicPath);
+  console.warn('Available directories:');
+  console.log(fs.readdirSync(__dirname));
+}
 
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://uksameer2006_db_user:UF5BV8KgX3JZxjZd@test.lgqqyqm.mongodb.net/chat_app?retryWrites=true&w=majority';
@@ -90,18 +100,25 @@ app.get('/health', (req, res) => {
 
 // Serve React app for all other routes (must be after all API routes)
 app.get('*', (req, res) => {
-  const indexPath = path.join(buildPath, 'index.html');
-  console.log('Attempting to serve:', indexPath);
-  res.sendFile(indexPath, (err) => {
-    if (err) {
-      console.error('Error serving index.html:', err);
-      res.status(500).json({ 
-        error: 'Could not load app',
-        path: indexPath,
-        buildPath: buildPath
+  try {
+    const indexPath = path.join(buildPath, 'index.html');
+    
+    if (!fs.existsSync(indexPath)) {
+      console.error('index.html not found at:', indexPath);
+      return res.status(404).json({ 
+        error: 'Application not found',
+        path: indexPath
       });
     }
-  });
+    
+    res.sendFile(indexPath);
+  } catch (err) {
+    console.error('Error serving React app:', err);
+    res.status(500).json({ 
+      error: 'Server error',
+      message: err.message
+    });
+  }
 });
 
 // Start server
