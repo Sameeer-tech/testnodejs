@@ -38,7 +38,8 @@ app.use(cors({
 app.use(express.json());
 
 // Serve React static files
-const buildPath = path.join(__dirname, '../public');
+const buildPath = path.join(__dirname, './public');
+console.log('Serving static files from:', buildPath);
 app.use(express.static(buildPath));
 
 // MongoDB Connection
@@ -89,7 +90,18 @@ app.get('/health', (req, res) => {
 
 // Serve React app for all other routes (must be after all API routes)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(buildPath, 'index.html'));
+  const indexPath = path.join(buildPath, 'index.html');
+  console.log('Attempting to serve:', indexPath);
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('Error serving index.html:', err);
+      res.status(500).json({ 
+        error: 'Could not load app',
+        path: indexPath,
+        buildPath: buildPath
+      });
+    }
+  });
 });
 
 // Start server
