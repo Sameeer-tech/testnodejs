@@ -22,7 +22,25 @@ function Chat({ user, onLogout }) {
     scrollToBottom();
   }, [messages]);
 
+  // Load messages when room changes
   useEffect(() => {
+    const loadMessages = async () => {
+      try {
+        setLoading(true);
+        // Fetch previous messages from database
+        const response = await axios.get(`/api/messages/${room}`);
+        setMessages(response.data || []);
+      } catch (error) {
+        console.error('Error loading messages:', error);
+        setMessages([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMessages();
+
+    // Join room and listen for new messages
     socket.emit('join_room', {
       room: room,
       username: user.username
