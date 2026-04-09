@@ -47,6 +47,20 @@ const Message = require('./models/Message');
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/messages', require('./routes/messages'));
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Chat App Backend is Running', 
+    status: 'success',
+    version: '1.0.0',
+    endpoints: {
+      auth: '/api/auth',
+      messages: '/api/messages',
+      health: '/health'
+    }
+  });
+});
+
 // Socket.io for real-time chat
 io.on('connection', (socket) => {
   console.log('New user connected:', socket.id);
