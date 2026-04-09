@@ -4,6 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const http = require('http');
 const socketIo = require('socket.io');
+const path = require('path');
 
 dotenv.config();
 
@@ -12,8 +13,12 @@ const server = http.createServer(app);
 
 // Determine allowed origins based on environment
 const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? ['https://chat-app-frontend.vercel.app', 'https://chat-app-frontend-git-main.vercel.app']
-  : ['http://localhost:3000'];
+  ? [
+      'https://chat-app-frontend.vercel.app', 
+      'https://chat-app-frontend-git-main.vercel.app',
+      process.env.RAILWAY_DOMAIN || 'http://localhost:5000'
+    ]
+  : ['http://localhost:3000', 'http://localhost:5000'];
 
 const io = socketIo(server, {
   cors: {
@@ -32,6 +37,10 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Serve React static files
+const buildPath = path.join(__dirname, '../client/build');
+app.use(express.static(buildPath));
+
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://uksameer2006_db_user:UF5BV8KgX3JZxjZd@test.lgqqyqm.mongodb.net/chat_app?retryWrites=true&w=majority';
 
@@ -46,20 +55,6 @@ const Message = require('./models/Message');
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/messages', require('./routes/messages'));
-
-// Root route
-app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Chat App Backend is Running', 
-    status: 'success',
-    version: '1.0.0',
-    endpoints: {
-      auth: '/api/auth',
-      messages: '/api/messages',
-      health: '/health'
-    }
-  });
-});
 
 // Socket.io for real-time chat
 io.on('connection', (socket) => {
@@ -90,6 +85,11 @@ io.on('connection', (socket) => {
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'Server is running', timestamp: new Date() });
+});
+
+// Serve React app for all other routes (must be after all API routes)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(buildPath, 'index.html'));
 });
 
 // Start server

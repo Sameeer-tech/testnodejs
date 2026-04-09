@@ -5,6 +5,9 @@ WORKDIR /app
 # Copy server files
 COPY server/package.json server/package-lock.json ./
 
+# Copy client build files
+COPY client/build ./client/build
+
 # Install dependencies
 RUN npm install --production
 
