@@ -39,17 +39,25 @@ app.use(cors({
 app.use(express.json());
 
 // Serve React static files
-const publicPath = path.join(__dirname, '../public');
-const buildPath = path.join(__dirname, '../public');
+const publicPath = path.join(__dirname, './public');
+const buildPath = path.join(__dirname, './public');
+
+console.log('__dirname:', __dirname);
+console.log('Public path:', publicPath);
 
 // Check if build folder exists
 if (fs.existsSync(publicPath)) {
-  console.log('Public folder found at:', publicPath);
+  console.log('✓ Public folder found at:', publicPath);
   app.use(express.static(publicPath));
 } else {
-  console.warn('Public folder not found at:', publicPath);
-  console.warn('Available directories:');
-  console.log(fs.readdirSync(__dirname));
+  console.warn('✗ Public folder not found at:', publicPath);
+  console.warn('Current working directory:', process.cwd());
+  try {
+    const contents = fs.readdirSync(__dirname);
+    console.warn('Contents of __dirname:', contents);
+  } catch (err) {
+    console.error('Could not read __dirname:', err.message);
+  }
 }
 
 // MongoDB Connection
